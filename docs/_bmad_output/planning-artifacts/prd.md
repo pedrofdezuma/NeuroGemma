@@ -1,5 +1,5 @@
 ---
-stepsCompleted: ["step-01-init", "step-02-discovery", "step-02b-vision", "step-02c-executive-summary", "step-03-success", "step-04-journeys", "step-05-domain", "step-06-innovation", "step-07-project-type", "step-08-scoping"]
+stepsCompleted: ["step-01-init", "step-02-discovery", "step-02b-vision", "step-02c-executive-summary", "step-03-success", "step-04-journeys", "step-05-domain", "step-06-innovation", "step-07-project-type", "step-08-scoping", "step-09-functional", "step-10-nonfunctional", "step-11-polish"]
 inputDocuments: ["product-brief-NeuroGemma.md", "brainstorming-session-2026-05-09-13-35-50.md", "distillate-NeuroGemma.md"]
 documentCounts:
   briefCount: 1
@@ -153,7 +153,7 @@ NeuroGemma is a high-performance orchestration and visualization platform design
 
 ### Post-MVP Features (Future Vision)
 *   **Phase 2 (Scalability):** Support for Batch Uploads and multi-study processing.
-*   **Phase 3 (Enterprise):** User Authentication, HIS/PACS integration, and DICOM metadata handling.
+*   **Phase 3 (Expansion):** User Authentication, HIS/PACS integration, and DICOM metadata handling.
 
 ### Risk Mitigation Strategy
 *   **Technical Risks (Orchestration):** The risk of the app failing to trigger the correct model sequence. **Mitigation:** Comprehensive pipeline logs in the "Technical Logs" tab to verify internal logic.
@@ -176,3 +176,60 @@ NeuroGemma is a high-performance orchestration and visualization platform design
 *   **Progress Feedback:** Integrated real-time progress indicators (e.g., `st.status`) to visualize the orchestration pipeline status as models are triggered or bypassed.
 *   **Browser Matrix:** Optimized for modern desktop browsers (Chrome, Edge, Safari) at standard 1080p laptop resolutions.
 *   **Responsive Layout:** Fixed-width centered layout to simulate a professional clinical workstation tool.
+
+## Functional Requirements
+
+### Image Management & Input
+*   **FR1:** Users can upload a single medical brain scan image in common formats (JPG, PNG).
+*   **FR2:** System can validate that the uploaded file is a supported image type before processing.
+*   **FR3:** System can display the uploaded image clearly within the primary diagnostic interface.
+
+### Model Orchestration (The Logic Gate)
+*   **FR4:** System can execute an automated pipeline of four heterogeneous AI models (3 CNNs + 1 VLM).
+*   **FR5:** System can classify the image based on Anatomical Plane (Axial, Sagittal, Coronal).
+*   **FR6:** System can classify the image based on Sequence (T1, T2, FLAIR, etc.).
+*   **FR7:** System can perform Normalized Depth Regression on the image.
+*   **FR8:** System can conditionally trigger the MedGemma VLM narrative *only* when the CNNs confirm an "Axial-Flair" scan.
+*   **FR9:** System can bypass VLM inference for non-Axial-Flair scans to optimize compute.
+
+### Diagnostic Visualization (Relieved UX)
+*   **FR10:** Users can view an integrated display of all model outputs (Plane, Sequence, Depth, and Narrative) on a single screen.
+*   **FR11:** System can display the VLM narrative as raw, explainable text.
+*   **FR12:** Users can see a real-time progress indicator as each stage of the orchestration pipeline executes.
+*   **FR13:** System can display a clear "Diagnostic Status" (e.g., "Processing," "Complete," or "Skipped") for each model.
+*   **FR22:** System can display visual "Confidence Indicators" (e.g., color-coded icons) alongside CNN labels to communicate model certainty.
+
+### Reporting & Documentation
+*   **FR14:** Users can generate a professional "Radiology Note" PDF with a single click.
+*   **FR15:** System can synthesize the on-screen model findings and hidden metadata into the PDF report.
+*   **FR16:** System can include the uploaded scan image in the generated PDF.
+*   **FR17:** System can embed mandatory clinical disclaimers and human-in-the-loop validation notes into every PDF.
+
+### Technical & Defensive Engineering
+*   **FR18:** Users can toggle a "Mock Mode" to simulate successful pipeline execution without live model inference.
+*   **FR19:** Users can access a dedicated "Technical Logs" view to verify the execution sequence of the Logic Gate.
+*   **FR20:** System can provide clear error feedback if the pipeline fails or a model timeout occurs.
+*   **FR21:** System can pre-load a "Golden Dataset" of curated images to ensure zero-latency retrieval during the thesis demonstration.
+
+## Non-Functional Requirements
+
+### Performance
+*   **NFR1:** The system must complete the initial 3-model CNN classification (Plane, Sequence, Depth) within **30 seconds** of image upload.
+*   **NFR2:** The MedGemma VLM narrative must be generated and displayed within **60 seconds** of being triggered by the Logic Gate.
+*   **NFR3:** The "Radiology Note" PDF must be synthesized and ready for user download within **10 seconds** of clicking the generation button.
+
+### Security & Privacy
+*   **NFR4:** All AI model execution (CNN and VLM) must occur locally on the application host. No data may be transmitted to external cloud services or APIs.
+*   **NFR5:** To protect patient privacy, the application must not persist uploaded images or generated reports on disk beyond the duration of the active user session.
+
+### Reliability (Demo Stability)
+*   **NFR6:** The "Mock Mode" must be architecturally decoupled from live model resources, ensuring a 100% reliable simulation even in the event of hardware or server failure.
+*   **NFR7:** The monolithic server must maintain stable operation for at least **2 hours of continuous use** without requiring a service restart.
+
+### Accessibility & UX Quality
+*   **NFR8:** The interface must use high-contrast text and a consistent clinical color palette to ensure legibility on standard high-definition projectors (1080p).
+*   **NFR9:** The core diagnostic workflow must be minimalist and linear, ensuring users can reach the PDF generation stage without navigating complex menus.
+
+### Implementation Constraints
+*   **NFR10:** All application components—including the diagnostic UI, model orchestration pipeline, and report generation engine—must be implemented in **Python** wherever feasible to ensure seamless integration with the AI research stack.
+*   **NFR11:** The application must utilize **ONNX Runtime** for CNN inference and **4-bit quantization** for the MedGemma VLM to ensure high performance on local hardware.
