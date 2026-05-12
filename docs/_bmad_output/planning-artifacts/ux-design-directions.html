@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroGemma UX Design Directions</title>
+    <style>
+        :root {
+            --clinical-teal: #20B2AA;
+            --soft-navy: #2C3E50;
+            --calm-slate: #F8F9FA;
+            --success-green: #28A745;
+            --border-color: #E9ECEF;
+            --text-color: #333;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--calm-slate);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            text-align: center;
+        }
+
+        h1 { color: var(--soft-navy); margin-bottom: 0.5rem; }
+        p.subtitle { color: #666; font-size: 1.1rem; }
+
+        .direction-container {
+            max-width: 1400px;
+            margin: 0 auto 5rem auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .direction-header {
+            padding: 1.5rem 2rem;
+            background: var(--calm-slate);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .direction-header h2 { margin: 0; font-size: 1.25rem; color: var(--soft-navy); }
+        .tag { background: var(--clinical-teal); color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+
+        .mockup-preview {
+            padding: 2rem;
+            min-height: 500px;
+            display: flex;
+            gap: 2rem;
+        }
+
+        /* Common UI Elements */
+        .image-viewer {
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .image-viewer::after { content: "MRI Brain Scan [AXIAL FLAIR]"; }
+
+        .result-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .label { font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
+        .value { font-size: 1.1rem; font-weight: 600; color: var(--soft-navy); }
+        .success { color: var(--success-green); }
+
+        .narrative-box {
+            line-height: 1.6;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        /* Direction 1: Split Screen */
+        .dir-split .image-viewer { flex: 1.5; height: 600px; }
+        .dir-split .results-panel { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+
+        /* Direction 2: Modern Canvas */
+        .dir-canvas { background-color: #F1F4F8; }
+        .dir-canvas .mockup-preview { flex-direction: column; }
+        .dir-canvas .top-row { display: flex; gap: 2rem; }
+        .dir-canvas .image-viewer { flex: 1; height: 400px; background: #111; border: 4px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .dir-canvas .narrative-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+
+        /* Direction 3: Bear-Inspired Typography */
+        .dir-bear .mockup-preview { flex-direction: column; max-width: 900px; margin: 0 auto; }
+        .dir-bear .image-viewer { height: 300px; width: 100%; margin-bottom: 2rem; border-radius: 4px; }
+        .dir-bear .grid-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .dir-bear .narrative-box { font-family: Georgia, serif; font-size: 1.1rem; border-left: 3px solid var(--clinical-teal); padding-left: 1.5rem; }
+
+        /* Direction 4: Technical Precision */
+        .dir-tech .mockup-preview { gap: 1rem; }
+        .dir-tech .image-viewer { flex: 2; height: 500px; }
+        .dir-tech .sidebar-results { flex: 0.8; display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+        .dir-tech .result-card { padding: 0.75rem; border-radius: 4px; }
+        .dir-tech .value { font-size: 0.9rem; font-family: monospace; }
+
+        /* Floating Export Button */
+        .export-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--clinical-teal);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(32, 178, 170, 0.4);
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+        }
+        .export-btn:hover { transform: scale(1.05); }
+
+        .analysis-section {
+            padding: 2rem;
+            background: #fff;
+            border-top: 1px dashed var(--border-color);
+        }
+        .analysis-section h3 { font-size: 1rem; color: var(--clinical-teal); margin-top: 0; }
+        .analysis-section ul { margin: 0; padding-left: 1.2rem; color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>NeuroGemma Design Directions</h1>
+        <p class="subtitle">Exploring the "Relieved" clinical experience through visual hierarchy and layout.</p>
+    </header>
+
+    <!-- Direction 1 -->
+    <div class="direction-container dir-split">
+        <div class="direction-header">
+            <h2>Direction 1: The Focused Radiologist (Split Screen)</h2>
+            <span class="tag">CLINICAL FOCUS</span>
+        </div>
+        <div class="mockup-preview">
+            <div class="image-viewer"></div>
+            <div class="results-panel">
+                <div class="result-card">
+                    <span class="label">Anatomical Plane</span>
+                    <span class="value success">Axial</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">Sequence</span>
+                    <span class="value success">FLAIR</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">Depth</span>
+                    <span class="value">0.45 (Normalized)</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">MedGemma Narrative</span>
+                    <div class="narrative-box">
+                        Hyperintense signal detected in the periventricular regions. Findings are consistent with small vessel ischemic changes. No evidence of acute intracranial hemorrhage or mass effect...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h3>Why it works:</h3>
+            <ul>
+                <li>Side-by-side comparison allows the expert to verify the text against the scan instantly.</li>
+                <li>High-contrast separation between image (dark) and data (light) reduces cognitive load.</li>
+                <li>Vertical stacking of results follows a logical diagnostic priority.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Direction 2 -->
+    <div class="direction-container dir-canvas">
+        <div class="direction-header">
+            <h2>Direction 2: Modern Clinical Canvas (Floating Elements)</h2>
+            <span class="tag">MODERN & AIRY</span>
+        </div>
+        <div class="mockup-preview">
+            <div class="top-row">
+                <div class="image-viewer"></div>
+                <div style="flex: 0.5; display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="result-card" style="border: none; background: #E9ECEF;">
+                        <span class="label">Classification</span>
+                        <span class="value">Axial-FLAIR</span>
+                    </div>
+                    <div class="result-card" style="border: none; background: #E9ECEF;">
+                        <span class="label">Processing Status</span>
+                        <span class="value success">Pipeline Complete</span>
+                    </div>
+                </div>
+            </div>
+            <div class="narrative-card">
+                <span class="label">Draft Radiology Note</span>
+                <div class="narrative-box">
+                    The examination demonstrates normal ventricular morphology. There is no midline shift. The cortical sulci are preserved. Focal T2/FLAIR hyperintensities are noted in the deep white matter, likely age-related. Clinical correlation recommended...
+                </div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h3>Why it works:</h3>
+            <ul>
+                <li>Floating containers create a sense of lightness and "Relief."</li>
+                <li>Prioritizes the narrative text by giving it the widest horizontal span.</li>
+                <li>Grouping "Status" and "Classification" together simplifies the top-level identification.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Direction 3 -->
+    <div class="direction-container dir-bear">
+        <div class="direction-header">
+            <h2>Direction 3: The Assistant's Notebook (Bear-Inspired)</h2>
+            <span class="tag">TYPOGRAPHY FOCUS</span>
+        </div>
+        <div class="mockup-preview">
+            <div class="image-viewer"></div>
+            <div class="grid-results">
+                <div class="result-card" style="border: none; text-align: center;">
+                    <span class="label">Plane</span>
+                    <span class="value">Axial</span>
+                </div>
+                <div class="result-card" style="border: none; text-align: center;">
+                    <span class="label">Sequence</span>
+                    <span class="value">FLAIR</span>
+                </div>
+                <div class="result-card" style="border: none; text-align: center;">
+                    <span class="label">Depth</span>
+                    <span class="value">0.45</span>
+                </div>
+            </div>
+            <div class="narrative-box">
+                <p><strong>Clinical Synthesis:</strong></p>
+                The Axial-Flair orchestration pipeline has identified multiple areas of high signal intensity. These are primarily localized to the subcortical white matter. The findings suggest moderate chronic microvascular disease. The ventricles and cisterns appear normal for age.
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h3>Why it works:</h3>
+            <ul>
+                <li>Typography is the hero, making the "Radiology Note" feel authoritative and easy to scan.</li>
+                <li>Minimalist UI chrome disappears, leaving only the clinical findings.</li>
+                <li>Traditional serif fonts for the narrative increase the "Medical Document" feel.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Direction 4 -->
+    <div class="direction-container dir-tech">
+        <div class="direction-header">
+            <h2>Direction 4: Technical Precision (High Density)</h2>
+            <span class="tag">ENGINEERING TRANSPARENCY</span>
+        </div>
+        <div class="mockup-preview">
+            <div class="image-viewer"></div>
+            <div class="sidebar-results">
+                <div class="result-card">
+                    <span class="label">Model: Plane_CNN</span>
+                    <span class="value">AXIAL [0.99]</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">Model: Seq_CNN</span>
+                    <span class="value">FLAIR [0.97]</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">Model: Depth_REG</span>
+                    <span class="value">0.4523</span>
+                </div>
+                <div class="result-card">
+                    <span class="label">Logic Gate</span>
+                    <span class="value success">VLM_TRIGGERED</span>
+                </div>
+                <div class="result-card" style="margin-top: auto;">
+                    <span class="label">VLM Narrative</span>
+                    <div class="narrative-box" style="font-size: 0.85rem;">
+                        Detailed findings: periventricular leukoaraiosis noted...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h3>Why it works:</h3>
+            <ul>
+                <li>Shows the "Confidence Scores" from the CNNs, building technical trust for the thesis defense.</li>
+                <li>High-density layout feels like a "Control Center," appealing to users who want full technical transparency.</li>
+                <li>Monospace fonts emphasize the "AI Model Hub" nature of the application.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button class="export-btn">Generate Radiology Note (PDF)</button>
+
+</body>
+</html>
