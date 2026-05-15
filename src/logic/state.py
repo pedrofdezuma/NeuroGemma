@@ -21,6 +21,12 @@ class InferenceState:
     is_mock_mode: bool = False
     uploaded_image: Optional[Image.Image] = None
     image_metadata: dict[str, Any] = field(default_factory=dict)
+    model_status: dict[str, str] = field(default_factory=lambda: {
+        "plane": "Pending",
+        "sequence": "Pending",
+        "depth": "Pending",
+        "narrative": "Pending"
+    })
 
 def init_state() -> None:
     """Initialize the InferenceState in Streamlit session state if not already present."""

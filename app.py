@@ -19,8 +19,14 @@ def main() -> None:
     init_state()
 
     # Load Custom CSS
-    from src.utils.styles import load_custom_css
+    from src.utils.styles import load_custom_css, render_breadcrumbs
     st.markdown(load_custom_css(), unsafe_allow_html=True)
+
+    inference = st.session_state.inference
+
+    # Pipeline Breadcrumbs - Dynamic Placeholder (Defined early for sidebar access)
+    breadcrumb_placeholder = st.empty()
+    breadcrumb_placeholder.markdown(render_breadcrumbs(inference.current_stage), unsafe_allow_html=True)
 
     # Sidebar
     with st.sidebar:
@@ -40,13 +46,22 @@ def main() -> None:
             st.write("#### Golden Datasets")
             dataset_option = st.selectbox(
                 "Select Clinical Scenario",
-                options=["axial_flair", "sagittal_t1"],
-                format_func=lambda x: "Axial-FLAIR (Positive)" if x == "axial_flair" else "Sagittal-T1 (Skipped)",
+                options=["axial_flair", "sagittal_t1", "error_scenario"],
+                format_func=lambda x: {
+                    "axial_flair": "Axial-FLAIR (Positive)",
+                    "sagittal_t1": "Sagittal-T1 (Skipped)",
+                    "error_scenario": "Simulated Pipeline Error"
+                }.get(x, x),
                 help="Choose a pre-defined radiology scenario to simulate pipeline behavior."
             )
             if st.button("Load Mock Data", width="stretch"):
                 from src.logic.logic_gate import run_mock_inference
-                run_mock_inference(dataset_option)
+                try:
+                    # Execute generator for real-time state updates in background
+                    for stage in run_mock_inference(dataset_option):
+                        breadcrumb_placeholder.markdown(render_breadcrumbs(stage), unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"❌ Pipeline Failure: {str(e)}")
                 st.rerun()
         
         st.markdown("---")
@@ -62,110 +77,162 @@ def main() -> None:
     st.title("🧠 NeuroGemma")
     st.markdown("### Advanced MRI Analysis & Clinical Decision Support")
 
-    inference = st.session_state.inference
-
-    # Pipeline Breadcrumbs
-    stages = ["ID", "GATE", "SYNTHESIS", "COMPLETE"]
-    current_stage_val = inference.current_stage.value
-    
-    cols = st.columns(len(stages))
-    for i, stage in enumerate(stages):
-        is_active = (stage == current_stage_val)
-        is_done = False
-        # Simple logic for "done" stages based on current_stage
-        stage_order = {"ID": 0, "GATE": 1, "SYNTHESIS": 2, "COMPLETE": 3}
-        if stage_order[current_stage_val] > stage_order[stage]:
-            is_done = True
-        
-        color = "#007BFF" if (is_active or is_done) else "#CED4DA"
-        label = f"**{stage}**" if is_active else stage
-        cols[i].markdown(f'<div style="text-align: center; color: {color}; border-bottom: 3px solid {color}; padding-bottom: 5px;">{label}</div>', unsafe_allow_html=True)
-
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Tab Layout
     tab_diag, tab_logs = st.tabs(["📋 Diagnostic View", "⚙️ Technical Logs"])
 
     with tab_diag:
-        st.header("Diagnostic Pipeline")
-        
-        if inference.current_stage == PipelineStage.COMPLETE:
-            st.success("Analysis Complete")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Plane", inference.results["plane"])
-                st.metric("Sequence", inference.results["sequence"])
-            with col2:
-                st.metric("Confidence", f"{inference.results['confidence']:.2%}")
-                st.metric("VLM Status", "Active" if inference.results["narrative"] else "Skipped")
+        if not inference.uploaded_image:
+            # Welcome & Upload Stage
+            st.markdown(f"""
+                <div class="upload-container">
+                    <div class="upload-icon">🩺</div>
+                    <div class="upload-text">Drag & Drop Brain Scan Here or Click to Upload</div>
+                </div>
+            """, unsafe_allow_html=True)
             
-            if inference.results["narrative"]:
-                st.markdown("#### Clinical Narrative")
-                st.info(inference.results["narrative"])
-        
-        # Image Upload Section (Visible if no results yet or explicitly at ID stage)
-        if not inference.results:
-            if not inference.uploaded_image:
-                st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-                st.markdown('<p class="upload-text">Drag & Drop Brain Scan Here or Click to Upload</p>', unsafe_allow_html=True)
-                uploaded_file = st.file_uploader(
-                    "Upload MRI Scan (FLAIR/T2)", 
-                    type=["png", "jpg", "jpeg"],
-                    label_visibility="collapsed"
-                )
+            uploaded_file = st.file_uploader(
+                "Upload MRI Scan (FLAIR/T2)", 
+                type=["png", "jpg", "jpeg"],
+                label_visibility="collapsed"
+            )
+            
+            st.markdown('<div class="upload-subtext">Supported formats: JPG, PNG • Max size: 20MB</div>', unsafe_allow_html=True)
+            
+            if uploaded_file:
+                from src.utils.file_handler import validate_and_load_image
+                try:
+                    with st.status("🩺 Validating Scan...", expanded=False) as status:
+                        image = validate_and_load_image(uploaded_file)
+                        status.update(label="✅ Scan Validated", state="complete")
+                    
+                    # Update state
+                    inference.uploaded_image = image
+                    inference.image_metadata = {
+                        "filename": uploaded_file.name,
+                        "format": image.format,
+                        "size": image.size,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    # Log Event
+                    log_entry = {
+                        "timestamp": datetime.now().isoformat(),
+                        "stage": "ID",
+                        "event": "UPLOAD_SUCCESS",
+                        "model_id": "user_input",
+                        "outcome": "IMAGE_VALIDATED",
+                        "confidence": 1.0,
+                        "metadata": inference.image_metadata
+                    }
+                    inference.step_logs.append(log_entry)
+                    inference.current_stage = PipelineStage.ID
+                    
+                    st.toast("✅ Image Validated Successfully")
+                    st.success("Redirecting to analysis dashboard...")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Upload Error: {str(e)}")
+        else:
+            # Split-Screen Dashboard
+            col_img, col_res = st.columns([1.2, 1])
+
+            with col_img:
+                st.markdown('<div class="result-card" style="background-color: #000; text-align: center;">', unsafe_allow_html=True)
+                st.image(inference.uploaded_image, use_column_width=True)
                 st.markdown('</div>', unsafe_allow_html=True)
                 
-                if uploaded_file:
-                    from src.utils.file_handler import validate_and_load_image
+                # Image Controls
+                c1, c2 = st.columns(2)
+                with c1:
+                    if st.button("Change Image", use_container_width=True):
+                        reset_state()
+                        st.rerun()
+                with c2:
+                    if not inference.results:
+                        if st.button("🚀 Run Pipeline", use_container_width=True):
+                            from src.logic.logic_gate import run_pipeline
+                            with st.status("🧠 Orchestrating Models...", expanded=True) as status:
+                                try:
+                                    # Iterate through the generator to push real-time breadcrumb updates
+                                    for stage in run_pipeline(inference.uploaded_image):
+                                        breadcrumb_placeholder.markdown(render_breadcrumbs(stage), unsafe_allow_html=True)
+                                    status.update(label="✅ Analysis Complete!", state="complete", expanded=False)
+                                except Exception as e:
+                                    status.update(label="❌ Pipeline Error", state="error", expanded=True)
+                                    st.error(f"Critical failure during inference: {str(e)}")
+                            st.rerun()
+
+            with col_res:
+                if inference.results:
+                    # CNN Results
+                    st.markdown("#### Quantitative Analysis")
+                    res_cols = st.columns(3)
+                    
                     try:
-                        image = validate_and_load_image(uploaded_file)
-                        
-                        # Update state
-                        inference.uploaded_image = image
-                        inference.image_metadata = {
-                            "filename": uploaded_file.name,
-                            "format": image.format,
-                            "size": image.size,
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        
-                        # Log Event
-                        log_entry = {
-                            "timestamp": datetime.now().isoformat(),
-                            "stage": "ID",
-                            "event": "UPLOAD_SUCCESS",
-                            "model_id": "user_input",
-                            "outcome": "IMAGE_VALIDATED",
-                            "confidence": 1.0,
-                            "metadata": inference.image_metadata
-                        }
-                        inference.step_logs.append(log_entry)
-                        inference.current_stage = PipelineStage.ID
-                        st.success(f"Image '{uploaded_file.name}' validated successfully.")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(str(e))
-            else:
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    st.subheader("Image Preview")
-                    st.image(inference.uploaded_image, width="stretch")
-                with col2:
-                    st.subheader("Image Metadata")
+                        depth_val = float(inference.results.get("depth", 0.0))
+                        depth_display = f"{depth_val:.2f}"
+                    except (ValueError, TypeError):
+                        depth_display = str(inference.results.get("depth", "N/A"))
+
+                    metrics = [
+                        ("Plane", inference.results.get("plane", "N/A"), inference.results.get("plane_conf", 1.0), "plane", inference.model_status.get("plane", "Pending")),
+                        ("Sequence", inference.results.get("sequence", "N/A"), inference.results.get("sequence_conf", 1.0), "sequence", inference.model_status.get("sequence", "Pending")),
+                        ("Depth", depth_display, inference.results.get("depth_conf", 1.0), "depth", inference.model_status.get("depth", "Pending"))
+                    ]
+                    
+                    for i, (label, value, conf, css_class, status) in enumerate(metrics):
+                        conf_level = "high" if conf >= 0.8 else "med" if conf >= 0.5 else "low"
+                        status_class = status.lower()
+                        with res_cols[i]:
+                            st.markdown(f"""
+                            <div class="result-card {css_class} {status_class}">
+                                <div class="status-badge {status_class}">{status}</div>
+                                <div class="result-label">{label}</div>
+                                <div class="result-value">{value}</div>
+                                <div class="confidence-tag {conf_level}">{conf:.1%} Conf.</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    # Narrative
+                    st.markdown("#### Clinical Narrative")
+                    narrative = inference.results.get("narrative")
+                    narr_status = inference.model_status.get("narrative", "Pending")
+                    
+                    if narr_status == "Processing":
+                        st.info("✨ MedGemma VLM is analyzing the scan...")
+                    elif narr_status == "Error":
+                        st.error("❌ VLM Synthesis Error. Check logs for details.")
+                    elif narr_status == "Complete":
+                        st.markdown(f"""
+                        <div class="vlm-status">
+                            <span>✨</span> VLM Triggered: Narrative Generated
+                        </div>
+                        """, unsafe_allow_html=True)
+                        st.markdown(f"""
+                        <div class="narrative-container">
+                            {narrative}
+                        </div>
+                        """, unsafe_allow_html=True)
+                    elif narr_status == "Skipped":
+                        st.markdown(f"""
+                        <div class="vlm-status skipped">
+                            <span>🚫</span> VLM Skipped: {narrative or "Non-Axial-FLAIR scan detected"}
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.info("Waiting for logic gate decision...")
+
+                    # FAB - Floating Action Button for PDF
+                    st.markdown('<div class="fab-container">', unsafe_allow_html=True)
+                    if st.button("📄 Generate Radiology Note", key="fab_pdf"):
+                        st.toast("Synthesizing PDF Report...")
+                        # Future: Story 4.1 implementation
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    st.info("Ready for inference. Click 'Run Pipeline' to start.")
                     st.json(inference.image_metadata)
-                    if st.button("Change Image", width="stretch"):
-                        inference.uploaded_image = None
-                        inference.image_metadata = {}
-                        st.rerun()
-                
-                st.markdown("---")
-                if st.button("🚀 Run Diagnostic Pipeline", width="stretch"):
-                    from src.logic.logic_gate import run_pipeline
-                    with st.status("🧠 Processing MRI Scan...", expanded=True) as status:
-                        run_pipeline(inference.uploaded_image)
-                        status.update(label="✅ Analysis Complete!", state="complete", expanded=False)
-                    st.rerun()
-                st.info("System ready for inference. Click the button above to start the automated clinical pipeline.")
 
     with tab_logs:
         st.header("Technical Decision Journal")

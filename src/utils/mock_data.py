@@ -6,6 +6,9 @@ GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
         "plane": "Axial",
         "sequence": "FLAIR",
         "depth": 0.45,
+        "plane_conf": 0.99,
+        "sequence_conf": 0.98,
+        "depth_conf": 0.97,
         "narrative": (
             "Positive for hyperintense signal in the periventricular white matter, "
             "consistent with chronic small vessel ischemic changes. No acute "
@@ -43,6 +46,9 @@ GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
         "plane": "Sagittal",
         "sequence": "T1",
         "depth": 0.12,
+        "plane_conf": 0.97,
+        "sequence_conf": 0.95,
+        "depth_conf": 0.90,
         "narrative": None,
         "confidence": 0.97,
         "logs": [
