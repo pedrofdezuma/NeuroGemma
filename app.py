@@ -85,20 +85,13 @@ def main() -> None:
     with tab_diag:
         if not inference.uploaded_image:
             # Welcome & Upload Stage
-            st.markdown(f"""
-                <div class="upload-container">
-                    <div class="upload-icon">🩺</div>
-                    <div class="upload-text">Drag & Drop Brain Scan Here or Click to Upload</div>
-                </div>
-            """, unsafe_allow_html=True)
+            st.info("👋 Welcome to NeuroGemma. Please upload a brain scan to begin analysis.")
             
             uploaded_file = st.file_uploader(
-                "Upload MRI Scan (FLAIR/T2)", 
+                "Drag and drop or click to upload MRI Scan", 
                 type=["png", "jpg", "jpeg"],
-                label_visibility="collapsed"
+                help="Supported formats: JPG, PNG • Max size: 20MB"
             )
-            
-            st.markdown('<div class="upload-subtext">Supported formats: JPG, PNG • Max size: 20MB</div>', unsafe_allow_html=True)
             
             if uploaded_file:
                 from src.utils.file_handler import validate_and_load_image
@@ -140,7 +133,7 @@ def main() -> None:
 
             with col_img:
                 st.markdown('<div class="result-card" style="background-color: #000; text-align: center;">', unsafe_allow_html=True)
-                st.image(inference.uploaded_image, use_column_width=True)
+                st.image(inference.uploaded_image, use_container_width=True)
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Image Controls
@@ -185,13 +178,16 @@ def main() -> None:
                     for i, (label, value, conf, css_class, status) in enumerate(metrics):
                         conf_level = "high" if conf >= 0.8 else "med" if conf >= 0.5 else "low"
                         status_class = status.lower()
+                        # Only show confidence for non-depth metrics (Regression models don't have classification confidence)
+                        conf_html = f'<div class="confidence-tag {conf_level}">{conf:.1%} Conf.</div>' if css_class != "depth" else ""
+                        
                         with res_cols[i]:
                             st.markdown(f"""
                             <div class="result-card {css_class} {status_class}">
                                 <div class="status-badge {status_class}">{status}</div>
                                 <div class="result-label">{label}</div>
                                 <div class="result-value">{value}</div>
-                                <div class="confidence-tag {conf_level}">{conf:.1%} Conf.</div>
+                                {conf_html}
                             </div>
                             """, unsafe_allow_html=True)
                     
@@ -224,24 +220,84 @@ def main() -> None:
                     else:
                         st.info("Waiting for logic gate decision...")
 
-                    # FAB - Floating Action Button for PDF
-                    st.markdown('<div class="fab-container">', unsafe_allow_html=True)
-                    if st.button("📄 Generate Radiology Note", key="fab_pdf"):
-                        st.toast("Synthesizing PDF Report...")
-                        # Future: Story 4.1 implementation
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    # FAB - Floating Action Button for PDF Export
+                    if inference.current_stage == PipelineStage.COMPLETE:
+                        from src.reports.report_engine import generate_report, get_report_filename
+                        
+                        st.markdown('<div class="fab-container">', unsafe_allow_html=True)
+                        try:
+                            # Generate report data
+                            report_bytes = generate_report(inference)
+                            report_filename = get_report_filename(inference)
+                            
+                            st.download_button(
+                                label="📄 Generate Radiology Note",
+                                data=report_bytes,
+                                file_name=report_filename,
+                                mime="application/pdf",
+                                key="fab_pdf_download",
+                                on_click=reset_state,
+                                help="Download the professional radiology report as a PDF."
+                            )
+                        except Exception as e:
+                            st.error(f"Failed to prepare report: {str(e)}")
+                        st.markdown('</div>', unsafe_allow_html=True)
                 else:
                     st.info("Ready for inference. Click 'Run Pipeline' to start.")
                     st.json(inference.image_metadata)
 
     with tab_logs:
-        st.header("Technical Decision Journal")
-        if inference.step_logs:
-            for log in inference.step_logs:
-                with st.expander(f"{log['stage']} - {log['event']}"):
-                    st.json(log)
+        st.markdown("### ⚙️ Technical Decision Journal")
+        
+        if not inference.step_logs:
+            st.markdown("""
+                <div style="text-align: center; padding: 3rem; color: #6C757D;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🕒</div>
+                    <div style="font-weight: 500;">No activity recorded yet.</div>
+                    <div style="font-size: 0.85rem;">Start the inference pipeline to generate a technical audit trail.</div>
+                </div>
+            """, unsafe_allow_html=True)
         else:
-            st.code("--- Pipeline initialized ---\n[INFO] Waiting for user input...", language="text")
+            # Container for all journal entries
+            st.markdown('<div class="journal-container">', unsafe_allow_html=True)
+            
+            for log in inference.step_logs:
+                # 1. Parse timestamp
+                try:
+                    ts = datetime.fromisoformat(log['timestamp']).strftime("%H:%M:%S")
+                except:
+                    ts = "--:--:--"
+                
+                stage = str(log.get('stage', 'ID'))
+                event = str(log.get('event', 'EVENT'))
+                outcome = log.get('outcome', 'OUTCOME')
+                conf = log.get('confidence')
+                
+                # 2. Determine Style Classes
+                stage_class = stage.lower()
+                outcome_class = str(outcome).lower() if outcome is not None else ""
+                if "triggered" in outcome_class: outcome_class = "triggered"
+                elif "skip" in outcome_class: outcome_class = "skipped"
+                elif "success" in outcome_class or "complete" in outcome_class or "validated" in outcome_class: outcome_class = "success"
+                
+                conf_html = f'<div class="journal-confidence">{conf:.1%}</div>' if conf is not None else '<div class="journal-confidence"></div>'
+                
+                # 3. Render Entry Row
+                st.markdown(f"""
+                <div class="journal-entry">
+                    <div class="journal-timestamp">{ts}</div>
+                    <div class="journal-badge {stage_class}">{stage}</div>
+                    <div class="journal-event">{event}</div>
+                    <div class="journal-outcome {outcome_class}">{outcome}</div>
+                    {conf_html}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # 4. Inspector / Metadata (AC #7)
+                with st.expander(f"🔍 Technical Metadata: {event}", expanded=False):
+                    st.json(log.get('metadata', {}))
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

@@ -35,6 +35,17 @@ def run_mock_inference(dataset_id: str) -> Generator[PipelineStage, None, None]:
     inference = st.session_state.inference
     inference.is_mock_mode = True
     
+    # Load specific mock image if available, else fallback to placeholder
+    import os
+    placeholder_color = (20, 20, 20)
+    if mock_data and "image_path" in mock_data and os.path.exists(mock_data["image_path"]):
+        try:
+            inference.uploaded_image = Image.open(mock_data["image_path"])
+        except Exception:
+            inference.uploaded_image = Image.new('RGB', (512, 512), color=placeholder_color)
+    else:
+        inference.uploaded_image = Image.new('RGB', (512, 512), color=placeholder_color)
+    
     # --- STAGE: ID ---
     inference.current_stage = PipelineStage.ID
     yield PipelineStage.ID
@@ -208,11 +219,10 @@ def run_pipeline(image: Image.Image) -> Generator[PipelineStage, None, None]:
         })
         raise InferenceError(f"Depth Estimation Failed: {str(e)}") from e
     
-    # Calculate aggregate confidence
+    # Calculate aggregate confidence (Average of classification models only)
     plane_conf = inference.results.get("plane_conf", 0.0)
     seq_conf = inference.results.get("sequence_conf", 0.0)
-    depth_conf = inference.results.get("depth_conf", 0.0)
-    inference.results["confidence"] = (plane_conf + seq_conf + depth_conf) / 3
+    inference.results["confidence"] = (plane_conf + seq_conf) / 2
     
     # --- STAGE: GATE (Logic Gate Decision) ---
     inference.current_stage = PipelineStage.GATE

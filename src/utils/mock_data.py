@@ -3,6 +3,7 @@ from typing import Any
 
 GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
     "axial_flair": {
+        "image_path": "src/assets/mock_images/axial_flair.png",
         "plane": "Axial",
         "sequence": "FLAIR",
         "depth": 0.45,
@@ -43,6 +44,7 @@ GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
         ]
     },
     "sagittal_t1": {
+        "image_path": "src/assets/mock_images/sagittal_t1.png",
         "plane": "Sagittal",
         "sequence": "T1",
         "depth": 0.12,

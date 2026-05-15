@@ -1,5 +1,5 @@
 # generated: 2026-05-12
-# last_updated: 2026-05-15 18:15
+# last_updated: 2026-05-15 19:15
 # project: NeuroGemma
 # project_key: NOKEY
 # tracking_system: file-system
@@ -8,7 +8,7 @@
 # ... (omitted definitions for brevity)
 
 generated: 2026-05-12
-last_updated: 2026-05-15 18:15
+last_updated: 2026-05-15 19:30
 project: NeuroGemma
 project_key: NOKEY
 tracking_system: file-system
@@ -35,9 +35,9 @@ development_status:
   3-4-unified-diagnostic-results-display: review
   3-5-error-handling-and-diagnostic-status: review
   epic-3-retrospective: optional
-  epic-4: backlog
-  4-1-professional-radiology-note-pdf-engine: backlog
-  4-2-floating-action-button-fab-for-pdf-export: backlog
-  4-3-technical-decision-journal-logs-viewer: backlog
-  4-4-automatic-session-reset-on-report-download: backlog
+  epic-4: in-progress
+  4-1-professional-radiology-note-pdf-engine: review
+  4-2-floating-action-button-fab-for-pdf-export: review
+  4-3-technical-decision-journal-logs-viewer: review
+  4-4-automatic-session-reset-on-report-download: review
   epic-4-retrospective: optional
