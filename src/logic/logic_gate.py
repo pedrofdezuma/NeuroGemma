@@ -11,6 +11,8 @@ from src.models.model_plane_cnn import ModelPlaneCNN
 from src.models.model_seq_cnn import ModelSeqCNN
 from src.models.model_depth_cnn import ModelDepthCNN
 
+from src.utils.localization import get_text
+
 def run_mock_inference(dataset_id: str) -> Generator[PipelineStage, None, None]:
     """
     Simulate the inference pipeline using a golden dataset.
@@ -19,7 +21,10 @@ def run_mock_inference(dataset_id: str) -> Generator[PipelineStage, None, None]:
         dataset_id: The ID of the golden dataset to load.
     """
     # 1. Clear existing results
+    # We must preserve the language before reset
+    lang = st.session_state.inference.language
     reset_state()
+    st.session_state.inference.language = lang
     
     # 2. Retrieve mock data
     try:
@@ -94,7 +99,7 @@ def run_mock_inference(dataset_id: str) -> Generator[PipelineStage, None, None]:
         inference.results["narrative"] = mock_data["narrative"]
         inference.model_status["narrative"] = "Complete"
     else:
-        inference.results["narrative"] = "Analysis Skipped (Scan not Axial-FLAIR)"
+        inference.results["narrative"] = get_text("vlm_skipped_reason", lang)
         inference.model_status["narrative"] = "Skipped"
     
     # 4. Populate step logs
@@ -121,6 +126,7 @@ def run_pipeline(image: Image.Image) -> Generator[PipelineStage, None, None]:
         init_state()
     
     inference = st.session_state.inference
+    lang = inference.language
     inference.is_mock_mode = False
     inference.results = {} 
     inference.step_logs = [] 
@@ -193,7 +199,8 @@ def run_pipeline(image: Image.Image) -> Generator[PipelineStage, None, None]:
     inference.model_status["depth"] = "Processing"
     try:
         depth_model = ModelDepthCNN()
-        depth_res = depth_model.predict(image)
+        filename = inference.image_metadata.get("filename", "")
+        depth_res = depth_model.predict(image, filename=filename)
         inference.results["depth"] = depth_res["label"]
         inference.results["depth_conf"] = depth_res["confidence"]
         inference.model_status["depth"] = "Complete"
@@ -242,6 +249,7 @@ def evaluate_logic_gate(inference_state: InferenceState, image: Image.Image) -> 
         inference_state: The current state of the inference pipeline.
         image: The uploaded image object.
     """
+    lang = inference_state.language
     plane = str(inference_state.results.get("plane", "")).lower()
     sequence = str(inference_state.results.get("sequence", "")).lower()
     
@@ -274,7 +282,14 @@ def evaluate_logic_gate(inference_state: InferenceState, image: Image.Image) -> 
             prediction = vlm.predict(image)
             narrative = prediction.get("text", "No narrative generated.")
             inference_state.results["narrative"] = narrative
-            inference_state.model_status["narrative"] = "Complete"
+            
+            # If the model is disabled, we mark it as 'Skipped' or 'Disabled' instead of 'Complete'
+            if "disabled" in narrative.lower():
+                inference_state.model_status["narrative"] = "Skipped"
+                outcome = "DISABLED"
+            else:
+                inference_state.model_status["narrative"] = "Complete"
+                outcome = "SUCCESS"
             
             # Log the VLM outcome
             inference_state.step_logs.append({
@@ -282,7 +297,7 @@ def evaluate_logic_gate(inference_state: InferenceState, image: Image.Image) -> 
                 "stage": "SYNTHESIS",
                 "event": "NARRATIVE_GENERATED",
                 "model_id": "medgemma_vlm",
-                "outcome": "SUCCESS",
+                "outcome": outcome,
                 "confidence": prediction.get("confidence", 1.0),
                 "metadata": {"text_length": len(narrative)}
             })
@@ -299,7 +314,7 @@ def evaluate_logic_gate(inference_state: InferenceState, image: Image.Image) -> 
             raise InferenceError(f"VLM Synthesis Failed: {str(e)}") from e
     else:
         # Bypass VLM
-        inference_state.results["narrative"] = "Analysis Skipped (Scan not Axial-FLAIR)"
+        inference_state.results["narrative"] = get_text("vlm_skipped_reason", lang)
         inference_state.model_status["narrative"] = "Skipped"
         
         # Log the skip

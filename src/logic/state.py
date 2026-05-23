@@ -15,6 +15,7 @@ class PipelineStage(Enum):
 @dataclass
 class InferenceState:
     """Centralized state object for tracking inference progress and results."""
+    language: str = "Español"
     current_stage: PipelineStage = PipelineStage.ID
     results: dict[str, Any] = field(default_factory=dict)
     step_logs: list[dict[str, Any]] = field(default_factory=list)
