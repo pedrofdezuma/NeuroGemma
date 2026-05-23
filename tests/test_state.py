@@ -15,19 +15,27 @@ def test_inference_state_defaults():
     assert state.results == {}
     assert state.step_logs == []
     assert state.is_mock_mode is False
+    assert state.uploaded_image is None
+    assert state.image_metadata == {}
 
 def test_inference_state_types():
     """Verify that InferenceState accepts correct types."""
+    from PIL import Image
+    img = Image.new('RGB', (10, 10))
     state = InferenceState(
         current_stage=PipelineStage.GATE,
         results={"test": 1},
         step_logs=[{"event": "test"}],
-        is_mock_mode=True
+        is_mock_mode=True,
+        uploaded_image=img,
+        image_metadata={"format": "PNG"}
     )
     assert state.current_stage == PipelineStage.GATE
     assert state.results == {"test": 1}
     assert state.step_logs == [{"event": "test"}]
     assert state.is_mock_mode is True
+    assert state.uploaded_image == img
+    assert state.image_metadata == {"format": "PNG"}
 
 def test_init_state():
     """Verify that init_state initializes session_state correctly."""
@@ -47,15 +55,20 @@ def test_reset_state():
     """Verify that reset_state wipes the session_state."""
     import streamlit as st
     from src.logic.state import init_state, reset_state, PipelineStage
+    from PIL import Image
     
     init_state()
     st.session_state.inference.current_stage = PipelineStage.GATE
     st.session_state.inference.results = {"some": "data"}
+    st.session_state.inference.uploaded_image = Image.new('RGB', (10, 10))
+    st.session_state.inference.image_metadata = {"format": "PNG"}
     
     reset_state()
     
     assert st.session_state.inference.current_stage == PipelineStage.ID
     assert st.session_state.inference.results == {}
+    assert st.session_state.inference.uploaded_image is None
+    assert st.session_state.inference.image_metadata == {}
 
 def test_step_log_format():
     """Verify that step_logs entries follow the specified schema."""

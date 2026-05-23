@@ -3,9 +3,13 @@ from typing import Any
 
 GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
     "axial_flair": {
+        "image_path": "src/assets/mock_images/axial_flair.png",
         "plane": "Axial",
         "sequence": "FLAIR",
         "depth": 0.45,
+        "plane_conf": 0.99,
+        "sequence_conf": 0.98,
+        "depth_conf": 0.97,
         "narrative": (
             "Positive for hyperintense signal in the periventricular white matter, "
             "consistent with chronic small vessel ischemic changes. No acute "
@@ -40,9 +44,13 @@ GOLDEN_DATASETS: dict[str, dict[str, Any]] = {
         ]
     },
     "sagittal_t1": {
+        "image_path": "src/assets/mock_images/sagittal_t1.png",
         "plane": "Sagittal",
         "sequence": "T1",
         "depth": 0.12,
+        "plane_conf": 0.97,
+        "sequence_conf": 0.95,
+        "depth_conf": 0.90,
         "narrative": None,
         "confidence": 0.97,
         "logs": [

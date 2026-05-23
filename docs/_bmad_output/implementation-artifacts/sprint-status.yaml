@@ -1,41 +1,14 @@
 # generated: 2026-05-12
-# last_updated: 2026-05-12 21:00
+# last_updated: 2026-05-15 19:15
 # project: NeuroGemma
 # project_key: NOKEY
 # tracking_system: file-system
 # story_location: docs/_bmad_output/implementation-artifacts
 
-# STATUS DEFINITIONS:
-# ==================
-# Epic Status:
-#   - backlog: Epic not yet started
-#   - in-progress: Epic actively being worked on
-#   - done: All stories in epic completed
-#
-# Epic Status Transitions:
-#   - backlog → in-progress: Automatically when first story is created (via create-story)
-#   - in-progress → done: Manually when all stories reach 'done' status
-#
-# Story Status:
-#   - backlog: Story only exists in epic file
-#   - ready-for-dev: Story file created in stories folder
-#   - in-progress: Developer actively working on implementation
-#   - review: Ready for code review (via Dev's code-review workflow)
-#   - done: Story completed
-#
-# Retrospective Status:
-#   - optional: Can be completed but not required
-#   - done: Retrospective has been completed
-#
-# WORKFLOW NOTES:
-# ===============
-# - Epic transitions to 'in-progress' automatically when first story is created
-# - Stories can be worked in parallel if team capacity allows
-# - Developer typically creates next story after previous one is 'done' to incorporate learnings
-# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# ... (omitted definitions for brevity)
 
 generated: 2026-05-12
-last_updated: 2026-05-12 23:20
+last_updated: 2026-05-15 19:30
 project: NeuroGemma
 project_key: NOKEY
 tracking_system: file-system
@@ -46,25 +19,25 @@ development_status:
   1-1-project-initialization-and-infrastructure-setup: review
   1-2-centralized-state-management-inferencestate: review
   1-3-mock-mode-engine-and-golden-datasets: review
-  1-4-sidebar-controls-and-privacy-reset: backlog
+  1-4-sidebar-controls-and-privacy-reset: review
   epic-1-retrospective: optional
-  epic-2: backlog
-  2-1-image-upload-and-validation-logic: backlog
-  2-2-cnn-model-wrappers-onnx: backlog
-  2-3-medgemma-vlm-wrapper-4-bit-quantized: backlog
-  2-4-the-axial-flair-logic-gate-orchestrator: backlog
-  2-5-integrated-inference-pipeline-with-state-logging: backlog
+  epic-2: in-progress
+  2-1-image-upload-and-validation-logic: review
+  2-2-cnn-model-wrappers-onnx: review
+  2-3-medgemma-vlm-wrapper-4-bit-quantized: review
+  2-4-the-axial-flair-logic-gate-orchestrator: review
+  2-5-integrated-inference-pipeline-with-state-logging: review
   epic-2-retrospective: optional
-  epic-3: backlog
-  3-1-relieved-aesthetic-and-two-tab-layout: backlog
-  3-2-enhanced-image-upload-area-with-feedback: backlog
-  3-3-pipeline-progress-indicator-breadcrumbs: backlog
-  3-4-unified-diagnostic-results-display: backlog
-  3-5-error-handling-and-diagnostic-status: backlog
+  epic-3: in-progress
+  3-1-relieved-aesthetic-and-two-tab-layout: review
+  3-2-enhanced-image-upload-area-with-feedback: review
+  3-3-pipeline-progress-indicator-breadcrumbs: review
+  3-4-unified-diagnostic-results-display: review
+  3-5-error-handling-and-diagnostic-status: review
   epic-3-retrospective: optional
-  epic-4: backlog
-  4-1-professional-radiology-note-pdf-engine: backlog
-  4-2-floating-action-button-fab-for-pdf-export: backlog
-  4-3-technical-decision-journal-logs-viewer: backlog
-  4-4-automatic-session-reset-on-report-download: backlog
+  epic-4: in-progress
+  4-1-professional-radiology-note-pdf-engine: review
+  4-2-floating-action-button-fab-for-pdf-export: review
+  4-3-technical-decision-journal-logs-viewer: review
+  4-4-automatic-session-reset-on-report-download: review
   epic-4-retrospective: optional
