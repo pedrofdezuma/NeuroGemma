@@ -1,4 +1,4 @@
-# NeuroGemma 🧠
+# NeuroGemma 
 
 **Sistema Avanzado de Análisis de RM y Soporte a la Decisión Clínica**
 
