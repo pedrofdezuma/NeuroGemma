@@ -5,7 +5,6 @@
 - **Primary Environment:** Conda is the preferred environment for local development.
 - **Environment Name:** `neuro_env`
 - **Dependency Management:** Maintain `environment.yml` as the source of truth for dependencies.
-- **Docker:** Use Docker primarily for final verification and deployment parity testing, not for daily development.
 
 ## Implementation Standards
 
