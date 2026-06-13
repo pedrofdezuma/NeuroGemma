@@ -279,7 +279,8 @@ def evaluate_logic_gate(inference_state: InferenceState, image: Image.Image) -> 
         inference_state.model_status["narrative"] = "Processing"
         try:
             vlm = ModelMedGemmaVLM()
-            prediction = vlm.predict(image)
+            # Pass the user's selected language to the VLM
+            prediction = vlm.predict(image, lang=lang)
             narrative = prediction.get("text", "No narrative generated.")
             inference_state.results["narrative"] = narrative
             

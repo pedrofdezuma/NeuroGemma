@@ -1,70 +1,56 @@
 # NeuroGemma 🧠
 
-**Advanced MRI Analysis & Clinical Decision Support System**
+**Sistema Avanzado de Análisis de RM y Soporte a la Decisión Clínica**
 
-NeuroGemma is a modular monolith application designed to assist radiologists by providing automated MRI analysis using local AI models (CNNs and VLMs). It follows a strict privacy-first, local-inference-only architecture.
+NeuroGemma es una aplicación de monolito modular diseñada para asistir a radiólogos proporcionando análisis automatizado de resonancias magnéticas (RM) utilizando modelos de IA locales (CNNs y VLMs). Sigue una arquitectura estricta de privacidad primero, con inferencia únicamente local.
 
-## Clinical Overview
+## Descripción Clínica
 
-NeuroGemma orchestrates a diagnostic pipeline:
-1. **Axial-Flair Logic Gate:** Validates scan type and orientation.
-2. **CNN Inference:** Identifies features and anomalies.
-3. **MedGemma VLM:** Provides high-level clinical interpretation (4-bit quantized).
-4. **Report Generation:** Produces professional radiology notes in PDF format.
+NeuroGemma orquesta un flujo de diagnóstico:
+1. **Puerta Lógica Axial-Flair:** Valida el tipo de escaneo y la orientación.
+2. **Inferencia CNN:** Identifica características y anomalías.
+3. **MedGemma VLM:** Proporciona interpretación clínica de alto nivel (cuantizado a 4 bits).
+4. **Generación de Informes:** Produce notas radiológicas profesionales en formato PDF.
 
-## Technology Stack
+## Stack Tecnológico
 
 - **Framework:** Streamlit
-- **Runtime:** Python 3.12 (Conda)
-- **Inference:** PyTorch, ONNX Runtime, Transformers, BitsAndBytes
-- **Infrastructure:** Docker with NVIDIA Container Toolkit
+- **Entorno de Ejecución:** Python 3.12 (Conda)
+- **Inferencia:** PyTorch, ONNX Runtime, Transformers, BitsAndBytes
 
-## Getting Started
+## Primeros Pasos
 
-### Prerequisites
+### Prerrequisitos
 
-- NVIDIA GPU with 8GB+ VRAM recommended.
-- [Conda](https://docs.conda.io/en/latest/miniconda.html) (Miniconda or Anaconda) installed.
-- [Optional] Docker with NVIDIA Container Toolkit for deployment testing.
+- Se recomienda una GPU NVIDIA con más de 8GB de VRAM.
+- [Conda](https://docs.conda.io/en/latest/miniconda.html) (Miniconda o Anaconda) instalado.
 
-### Local Development (Conda) - Recommended
+### Desarrollo Local (Conda) - Recomendado
 
-1. **Create the environment:**
+1. **Crear el entorno:**
    ```bash
    conda env create -f environment.yml
    ```
 
-2. **Activate and run:**
+2. **Activar y ejecutar:**
    ```bash
    conda activate neuro_env
    streamlit run app.py
    ```
 
-3. **Verify Installation:**
+3. **Verificar la Instalación:**
    ```bash
    python src/utils/verify_env.py
    ```
 
-### Deployment Testing (Docker)
+## Estructura del Proyecto
 
-1. **Build the image:**
-   ```bash
-   docker build -t neurogemma .
-   ```
+- `src/models/`: Hub de Inferencia (Wrappers de modelos)
+- `src/logic/`: Motor de Orquestación (Puerta Lógica)
+- `src/reports/`: Motor de Informes (Generación de PDF)
+- `src/utils/`: Utilidades y Estilos
+- `tests/`: Suite de Pytest
 
-2. **Run the container (with GPU support):**
-   ```bash
-   docker run --gpus all -p 8501:8501 neurogemma
-   ```
+## Licencia
 
-## Project Structure
-
-- `src/models/`: Inference Hub (Model wrappers)
-- `src/logic/`: Orchestration Engine (Logic Gate)
-- `src/reports/`: Reporting Engine (PDF Generation)
-- `src/utils/`: Utilities & Styles
-- `tests/`: Pytest suite
-
-## License
-
-Proprietary - Clinical Decision Support Tool
+Propietaria - Herramienta de Soporte a la Decisión Clínica
