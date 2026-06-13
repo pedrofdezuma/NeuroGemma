@@ -38,6 +38,15 @@ NeuroGemma orquesta un flujo de diagnóstico:
    streamlit run app.py
    ```
 
+### Alternativa con Pip (requirements.txt)
+
+El archivo `requirements.txt` contiene una lista de todas las librerías de Python necesarias para que el proyecto funcione, con sus versiones exactas. Es útil si prefieres no usar Conda o para entornos de despliegue ligeros.
+
+1. **Instalar dependencias:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
 3. **Verificar la Instalación:**
    ```bash
    python src/utils/verify_env.py
@@ -51,6 +60,3 @@ NeuroGemma orquesta un flujo de diagnóstico:
 - `src/utils/`: Utilidades y Estilos
 - `tests/`: Suite de Pytest
 
-## Licencia
-
-Propietaria - Herramienta de Soporte a la Decisión Clínica
